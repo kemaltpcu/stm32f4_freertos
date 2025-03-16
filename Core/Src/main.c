@@ -41,6 +41,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+RTC_HandleTypeDef hrtc;
+
 UART_HandleTypeDef huart2;
 
 /* Definitions for defaultTask */
@@ -52,12 +54,22 @@ const osThreadAttr_t defaultTask_attributes = {
 };
 /* USER CODE BEGIN PV */
 
+xTaskHandle handle_cmd_task;
+xTaskHandle handle_menu_task;
+xTaskHandle handle_print_task;
+xTaskHandle handle_led_task;
+xTaskHandle handle_rtc_task;
+
+QueueHandle_t q_data;
+QueueHandle_t q_print;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_RTC_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
@@ -77,7 +89,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  BaseType_t status;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -99,7 +111,31 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
+
+  status = xTaskCreate(menu_task,"Menu Task", 250, NULL, 2, &handle_menu_task);
+  configASSERT(status==pdPASS);
+
+  status = xTaskCreate(cmd_handler_task, "cmd_task", 250, NULL, 2, &handle_cmd_task);
+  configASSERT(status == pdPASS);
+
+  status = xTaskCreate(print_task, "print_task", 250, NULL, 2, &handle_print_task);
+  configASSERT(status == pdPASS);
+
+  status = xTaskCreate(led_task, "led_task", 250, NULL, 2, &handle_led_task);
+  configASSERT(status == pdPASS);
+
+  status = xTaskCreate(rtc_task, "rtc_task", 250, NULL, 2, &handle_rtc_task);
+  configASSERT(status == pdPASS);
+
+  q_data = xQueueCreate (10, sizeof(char));
+
+  configASSERT(q_data != NULL); //If its not null so the program will continue (no error)
+
+  q_print = xQueueCreate (10, sizeof(size_t));
+
+  configASSERT(q_print != NULL);
 
   /* USER CODE END 2 */
 
@@ -128,6 +164,9 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+
+
+
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -167,8 +206,9 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 8;
@@ -193,6 +233,41 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief RTC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_RTC_Init(void)
+{
+
+  /* USER CODE BEGIN RTC_Init 0 */
+
+  /* USER CODE END RTC_Init 0 */
+
+  /* USER CODE BEGIN RTC_Init 1 */
+
+  /* USER CODE END RTC_Init 1 */
+
+  /** Initialize RTC Only
+  */
+  hrtc.Instance = RTC;
+  hrtc.Init.HourFormat = RTC_HOURFORMAT_12;
+  hrtc.Init.AsynchPrediv = 127;
+  hrtc.Init.SynchPrediv = 255;
+  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN RTC_Init 2 */
+
+  /* USER CODE END RTC_Init 2 */
+
 }
 
 /**
@@ -276,6 +351,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
 
 /* USER CODE END 4 */
 
