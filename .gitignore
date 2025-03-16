@@ -1,0 +1,47 @@
+# STM32CubeIDE specific files
+*.launch
+*.settings/
+*.cproject
+*.project
+*.mxproject
+*.svd
+*.dep
+
+# STM32CubeMX-generated files (if applicable)
+*.ioc
+
+# Build files and object files
+/Debug/
+/Release/
+/build/
+/out/
+/bin/
+/obj/
+/lib/
+/Core/Startup/*.o
+/Core/Src/*.o
+/Core/*.o
+
+# Generated dependency files
+*.d
+*.lst
+*.map
+*.elf
+*.axf
+*.hex
+*.bin
+*.srec
+*.stackdump
+
+# Logs and temporary files
+*.log
+*.bak
+*.tmp
+*.swp
+
+# VSCode-specific files
+.vscode/
+
+# macOS & Windows system files
+.DS_Store
+Thumbs.db

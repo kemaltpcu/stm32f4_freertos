@@ -24,7 +24,7 @@ Communication: UART to USB Chip
 
 1. Clone the Repository
 ```
-https://github.com/kemaltpcu/stm32f4_freertos.git
+git clone https://github.com/kemaltpcu/stm32f4_freertos.git
 cd your-repo
 ```
 2. Build the Project
